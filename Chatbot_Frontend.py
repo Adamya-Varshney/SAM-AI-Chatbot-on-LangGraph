@@ -415,6 +415,47 @@ with time_col:
         render_live_time()
 
 
+if not st.session_state['message_history']:
+    st.markdown("""
+    <div style="
+        background: linear-gradient(135deg, #1A2942 0%, #162236 100%);
+        border: 1px solid #2A3F5F;
+        border-radius: 16px;
+        padding: 1.8rem 2rem;
+        margin: 1.5rem auto;
+        max-width: 680px;
+    ">
+        <div style="text-align: center; margin-bottom: 1.2rem;">
+            <span style="font-size: 1.6rem; font-weight: 700; color: #E8734A;">Hey, I'm SAM</span>
+            <p style="color: #8A9BB8; font-size: 0.92rem; margin: 0.3rem 0 0;">Your multi-utility AI assistant. Here's what I can do:</p>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.7rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; background: #0F1B2D; border-radius: 10px;">
+                <span style="font-size: 1.3rem;">📄</span>
+                <div>
+                    <span style="color: #E0E6F0; font-weight: 600; font-size: 0.95rem;">PDF Q&A</span>
+                    <p style="color: #6B7D9A; font-size: 0.82rem; margin: 0.1rem 0 0;">Upload a PDF and ask questions about it</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; background: #0F1B2D; border-radius: 10px;">
+                <span style="font-size: 1.3rem;">🔍</span>
+                <div>
+                    <span style="color: #E0E6F0; font-weight: 600; font-size: 0.95rem;">Web Search</span>
+                    <p style="color: #6B7D9A; font-size: 0.82rem; margin: 0.1rem 0 0;">Look up real-time info, news & facts</p>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.9rem; background: #0F1B2D; border-radius: 10px;">
+                <span style="font-size: 1.3rem;">💻</span>
+                <div>
+                    <span style="color: #E0E6F0; font-weight: 600; font-size: 0.95rem;">Code Interpreter</span>
+                    <p style="color: #6B7D9A; font-size: 0.82rem; margin: 0.1rem 0 0;">Write, debug & explain Python code</p>
+                </div>
+            </div>
+        </div>
+        <p style="text-align: center; color: #4A5E7A; font-size: 0.8rem; margin: 1rem 0 0;">Type a message below to get started</p>
+    </div>
+    """, unsafe_allow_html=True)
+
 for message in st.session_state['message_history']:
     with st.chat_message(message['role']):
         st.markdown(message['content'])
