@@ -3,6 +3,8 @@ from Chatbot_Backend import (
     chatbot,
     generate_title,
     ingest_pdf,
+    list_all_threads,
+    save_thread_title,
     thread_document_metadata,
 )
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
@@ -268,7 +270,9 @@ if 'thread_id' not in st.session_state:
     st.session_state['thread_id'] = generate_thread_id()
 
 if 'chat_threads' not in st.session_state:
-    st.session_state['chat_threads'] = []
+    persisted = list_all_threads()
+    st.session_state['chat_threads'] = [t['thread_id'] for t in persisted]
+    st.session_state['chat_titles'] = {t['thread_id']: t['title'] for t in persisted}
 
 if 'chat_titles' not in st.session_state:
     st.session_state['chat_titles'] = {}
@@ -347,7 +351,9 @@ for thread_id in st.session_state['chat_threads'][::-1]:
         )
         save_col, cancel_col = st.sidebar.columns(2)
         if save_col.button(':material/save: Save', key=f'save_{thread_id}'):
-            st.session_state['chat_titles'][thread_id] = new_title.strip() or title
+            final_title = new_title.strip() or title
+            st.session_state['chat_titles'][thread_id] = final_title
+            save_thread_title(str(thread_id), final_title)
             st.session_state['editing_thread'] = None
             st.rerun()
         if cancel_col.button(':material/close: Cancel', key=f'cancel_{thread_id}'):
@@ -520,5 +526,7 @@ if user_input:
 
     current_thread = st.session_state['thread_id']
     if current_thread not in st.session_state['chat_titles']:
-        st.session_state['chat_titles'][current_thread] = generate_title(user_input, ai_message)
+        title = generate_title(user_input, ai_message)
+        st.session_state['chat_titles'][current_thread] = title
+        save_thread_title(str(current_thread), title)
         st.rerun()
