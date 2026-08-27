@@ -326,13 +326,17 @@ if uploaded_pdf:
         st.sidebar.info(f"`{uploaded_pdf.name}` already processed for this chat.")
     else:
         with st.sidebar.status("Indexing PDF...", expanded=True) as status_box:
-            summary = ingest_pdf(
-                uploaded_pdf.getvalue(),
-                thread_id=thread_key,
-                filename=uploaded_pdf.name,
-            )
-            thread_docs[uploaded_pdf.name] = summary
-            status_box.update(label="PDF indexed successfully", state="complete", expanded=False)
+            try:
+                summary = ingest_pdf(
+                    uploaded_pdf.getvalue(),
+                    thread_id=thread_key,
+                    filename=uploaded_pdf.name,
+                )
+                thread_docs[uploaded_pdf.name] = summary
+                status_box.update(label="PDF indexed successfully", state="complete", expanded=False)
+            except Exception as e:
+                status_box.update(label="PDF indexing failed", state="error", expanded=False)
+                st.sidebar.error(f":material/error: {e}")
 
 st.sidebar.markdown("---")
 
