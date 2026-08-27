@@ -59,10 +59,17 @@ def ingest_pdf(file_bytes: bytes, thread_id: str, filename: Optional[str] = None
         loader = PyPDFLoader(temp_path)
         docs = loader.load()
 
+        if not docs:
+            raise ValueError("Could not extract any pages from this PDF.")
+
         splitter = RecursiveCharacterTextSplitter(
             chunk_size=1000, chunk_overlap=200, separators=["\n\n", "\n", " ", ""]
         )
         chunks = splitter.split_documents(docs)
+        chunks = [c for c in chunks if c.page_content.strip()]
+
+        if not chunks:
+            raise ValueError("PDF has no extractable text content.")
 
         vector_store = FAISS.from_documents(chunks, embeddings)
         retriever = vector_store.as_retriever(
