@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 import os
+import sqlite3
 import tempfile
-from typing import Annotated, Any, Dict, Optional, TypedDict
+from typing import Annotated, Any, Dict, List, Optional, TypedDict
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -13,7 +14,7 @@ from langchain_community.vectorstores import FAISS
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from langgraph.graph import START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
@@ -205,10 +206,52 @@ def chat_node(state: ChatState, config=None):
 tool_node = ToolNode(tools)
 
 # ---------------------------------------------------------------------------
-# Checkpointer + Graph
+# SQLite persistence
 # ---------------------------------------------------------------------------
-checkpointer = InMemorySaver()
+DB_PATH = Path(__file__).resolve().parent / "sam_memory.db"
 
+_checkpoint_conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+checkpointer = SqliteSaver(_checkpoint_conn)
+checkpointer.setup()
+
+_meta_conn = sqlite3.connect(str(DB_PATH), check_same_thread=False)
+_meta_conn.execute("""
+    CREATE TABLE IF NOT EXISTS thread_metadata (
+        thread_id TEXT PRIMARY KEY,
+        title     TEXT NOT NULL DEFAULT 'New Chat',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+""")
+_meta_conn.commit()
+
+
+def save_thread_title(thread_id: str, title: str) -> None:
+    _meta_conn.execute(
+        "INSERT INTO thread_metadata (thread_id, title) VALUES (?, ?) "
+        "ON CONFLICT(thread_id) DO UPDATE SET title = excluded.title",
+        (str(thread_id), title),
+    )
+    _meta_conn.commit()
+
+
+def get_thread_title(thread_id: str) -> str:
+    row = _meta_conn.execute(
+        "SELECT title FROM thread_metadata WHERE thread_id = ?",
+        (str(thread_id),),
+    ).fetchone()
+    return row[0] if row else "New Chat"
+
+
+def list_all_threads() -> List[dict]:
+    rows = _meta_conn.execute(
+        "SELECT thread_id, title FROM thread_metadata ORDER BY created_at ASC"
+    ).fetchall()
+    return [{"thread_id": r[0], "title": r[1]} for r in rows]
+
+
+# ---------------------------------------------------------------------------
+# Graph
+# ---------------------------------------------------------------------------
 graph = StateGraph(ChatState)
 graph.add_node("chat_node", chat_node)
 graph.add_node("tools", tool_node)

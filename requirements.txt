@@ -1,5 +1,6 @@
 streamlit>=1.37
 langgraph
+langgraph-checkpoint-sqlite
 langchain
 langchain-core
 langchain-openai
