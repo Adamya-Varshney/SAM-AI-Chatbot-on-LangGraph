@@ -102,7 +102,19 @@ def thread_document_metadata(thread_id: str) -> dict:
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
-search_tool = DuckDuckGoSearchRun(region="us-en")
+_ddg = DuckDuckGoSearchRun(region="us-en")
+
+
+@tool
+def web_search(query: str) -> str:
+    """Search the web for current information using DuckDuckGo."""
+    try:
+        return _ddg.run(query)
+    except Exception:
+        return (
+            "Web search is temporarily unavailable. "
+            "Please try again in a moment, or ask your question without web search."
+        )
 
 
 @tool
@@ -128,7 +140,7 @@ def rag_tool(query: str, thread_id: Optional[str] = None) -> dict:
     }
 
 
-tools = [search_tool, rag_tool]
+tools = [web_search, rag_tool]
 llm_with_tools = llm.bind_tools(tools)
 
 # ---------------------------------------------------------------------------
@@ -166,7 +178,7 @@ SYSTEM_PROMPT = (
     "the thread_id `{thread_id}`) to retrieve relevant passages before answering. "
     "If no document is available and the user asks about one, ask them to upload a PDF.\n"
     "\n"
-    "2. **Web Search**: Use the `duckduckgo_search` tool to look up current information, "
+    "2. **Web Search**: Use the `web_search` tool to look up current information, "
     "recent events, or anything not in your training data.\n"
     "\n"
     "3. **Code Interpreter**: You can write, explain, debug, and execute Python code. "
