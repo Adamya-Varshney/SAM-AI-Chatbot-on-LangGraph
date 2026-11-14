@@ -9,7 +9,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
-from langchain_community.tools import DuckDuckGoSearchRun
+from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_community.vectorstores import FAISS
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage
 from langchain_core.tools import tool
@@ -21,12 +21,13 @@ from langgraph.prebuilt import ToolNode, tools_condition
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env", override=True)
 
-if not os.getenv("OPENAI_API_KEY"):
-    try:
-        import streamlit as st
-        os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
-    except Exception:
-        pass
+for _key in ("OPENAI_API_KEY", "TAVILY_API_KEY"):
+    if not os.getenv(_key):
+        try:
+            import streamlit as st
+            os.environ[_key] = st.secrets[_key]
+        except Exception:
+            pass
 
 # ---------------------------------------------------------------------------
 # LLM + Embeddings
@@ -102,19 +103,7 @@ def thread_document_metadata(thread_id: str) -> dict:
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
-_ddg = DuckDuckGoSearchRun(region="us-en")
-
-
-@tool
-def web_search(query: str) -> str:
-    """Search the web for current information using DuckDuckGo."""
-    try:
-        return _ddg.run(query)
-    except Exception:
-        return (
-            "Web search is temporarily unavailable. "
-            "Please try again in a moment, or ask your question without web search."
-        )
+_tavily = TavilySearchResults(max_results=3)
 
 
 @tool
@@ -140,7 +129,7 @@ def rag_tool(query: str, thread_id: Optional[str] = None) -> dict:
     }
 
 
-tools = [web_search, rag_tool]
+tools = [_tavily, rag_tool]
 llm_with_tools = llm.bind_tools(tools)
 
 # ---------------------------------------------------------------------------
@@ -178,7 +167,7 @@ SYSTEM_PROMPT = (
     "the thread_id `{thread_id}`) to retrieve relevant passages before answering. "
     "If no document is available and the user asks about one, ask them to upload a PDF.\n"
     "\n"
-    "2. **Web Search**: Use the `web_search` tool to look up current information, "
+    "2. **Web Search**: Use the `tavily_search_results_json` tool to look up current information, "
     "recent events, or anything not in your training data.\n"
     "\n"
     "3. **Code Interpreter**: You can write, explain, debug, and execute Python code. "

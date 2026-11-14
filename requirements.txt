@@ -9,5 +9,4 @@ python-dotenv
 langchain-text-splitters
 faiss-cpu
 pypdf
-duckduckgo-search
-ddgs
+tavily-python
