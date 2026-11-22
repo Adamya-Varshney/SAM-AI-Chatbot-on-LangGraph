@@ -2,13 +2,15 @@ import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 from langgraph.prebuilt import ToolNode
 
 from app.config import get_settings
-from app.services.memory import recall_memories, extract_and_store_memories
+from app.services.memory import recall_memories, extract_and_store_memories, embed_text
+from app.database import get_connection
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +48,56 @@ Use this context naturally in your responses when relevant."""
     return prompt
 
 
-def get_tools():
+def _make_document_search_tool(user_id: str, thread_id: str):
+    @tool
+    async def search_uploaded_documents(query: str) -> str:
+        """Search the user's uploaded PDF documents for relevant information. Use this when the user asks about content from a document or PDF they uploaded."""
+        try:
+            embedding = await embed_text(query)
+            embedding_str = "[" + ",".join(str(x) for x in embedding) + "]"
+
+            async with get_connection() as conn:
+                rows = await conn.fetch(
+                    """
+                    SELECT content, filename, page_number,
+                           1 - (embedding <=> $1::vector) AS similarity
+                    FROM document_chunks
+                    WHERE user_id = $2 AND thread_id = $3
+                    ORDER BY embedding <=> $1::vector
+                    LIMIT 5
+                    """,
+                    embedding_str, user_id, thread_id,
+                )
+
+            if not rows:
+                return "No documents have been uploaded to this conversation yet."
+
+            results = []
+            for row in rows:
+                if row["similarity"] > 0.3:
+                    results.append(
+                        f"[{row['filename']}, page {row['page_number']}]\n{row['content']}"
+                    )
+
+            if not results:
+                return "No relevant content found in the uploaded documents."
+
+            return "\n\n---\n\n".join(results)
+        except Exception as e:
+            logger.exception("Document search failed")
+            return f"Error searching documents: {e}"
+
+    return search_uploaded_documents
+
+
+def get_tools(user_id: str | None = None, thread_id: str | None = None):
     from langchain_community.tools.tavily_search import TavilySearchResults
     settings = get_settings()
     tools = []
     if settings.tavily_api_key:
         tools.append(TavilySearchResults(max_results=3))
+    if user_id and thread_id:
+        tools.append(_make_document_search_tool(user_id, thread_id))
     return tools
 
 
@@ -105,7 +151,7 @@ async def run_agent_stream(
     memories = await recall_memories(user_id, message)
     system_prompt = build_system_prompt(memories, location, timezone)
 
-    tools = get_tools()
+    tools = get_tools(user_id=user_id, thread_id=thread_id)
     graph = build_graph(tools)
 
     async with get_checkpointer() as checkpointer:
@@ -126,7 +172,9 @@ async def run_agent_stream(
 
             if kind == "on_chat_model_stream":
                 chunk = event["data"]["chunk"]
-                if hasattr(chunk, "content") and chunk.content:
+                if hasattr(chunk, "tool_call_chunks") and chunk.tool_call_chunks:
+                    continue
+                if hasattr(chunk, "content") and chunk.content and isinstance(chunk.content, str):
                     collected_text += chunk.content
                     yield ("token", {"content": chunk.content})
 
