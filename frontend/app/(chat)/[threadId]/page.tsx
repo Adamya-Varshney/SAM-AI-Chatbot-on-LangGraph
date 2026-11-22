@@ -2,6 +2,7 @@
 
 import { useParams, useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState, useCallback } from "react"
+import { mutate } from "swr"
 import { ChatHeader } from "@/components/chat/chat-header"
 import { MessageList } from "@/components/chat/message-list"
 import { InputArea } from "@/components/chat/input-area"
@@ -139,6 +140,7 @@ export default function ThreadPage() {
                 break
               case "done":
                 if (event.title) setTitle(event.title)
+                mutate("/api/threads")
                 break
               case "error":
                 assistantContent += `\n\nError: ${event.message}`
