@@ -1,6 +1,8 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect } from "react"
 import { ArrowLeft } from "lucide-react"
 import useSWR from "swr"
 import { Button } from "@/components/ui/button"
@@ -22,8 +24,9 @@ interface Connection {
   connected: boolean
 }
 
-export default function SettingsPage() {
+function SettingsContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { session } = useAuth()
 
   const { data: memories, mutate: mutateMemories } = useSWR(
@@ -31,10 +34,17 @@ export default function SettingsPage() {
     () => apiFetch<{ memories: Memory[] }>("/api/memories", session!.access_token),
   )
 
-  const { data: connections } = useSWR(
+  const { data: connections, mutate: mutateConnections } = useSWR(
     session ? "/api/auth/connections" : null,
     () => apiFetch<{ connections: Connection[] }>("/api/auth/connections", session!.access_token),
   )
+
+  useEffect(() => {
+    if (searchParams.get("connected") || searchParams.get("error")) {
+      mutateConnections()
+      router.replace("/settings", { scroll: false })
+    }
+  }, [searchParams, mutateConnections, router])
 
   const handleDeleteMemory = async (id: string) => {
     if (!session) return
@@ -54,6 +64,7 @@ export default function SettingsPage() {
   const handleDisconnect = async (provider: string) => {
     if (!session) return
     await apiFetch(`/api/auth/disconnect/${provider}`, session.access_token, { method: "DELETE" })
+    mutateConnections()
   }
 
   return (
@@ -106,5 +117,13 @@ export default function SettingsPage() {
         ))}
       </section>
     </div>
+  )
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense>
+      <SettingsContent />
+    </Suspense>
   )
 }
