@@ -7,7 +7,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     supabase_url: str
     supabase_anon_key: str
-    supabase_jwt_secret: str
+    supabase_jwt_secret: str = ""
     supabase_db_url: str
 
     @field_validator("supabase_db_url")
