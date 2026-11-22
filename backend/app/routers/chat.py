@@ -13,7 +13,8 @@ router = APIRouter(prefix="/api/chat", tags=["chat"])
 
 
 def sse_event(event: str, data: dict) -> str:
-    return f"event: {event}\ndata: {json.dumps(data)}\n\n"
+    payload = {"type": event, **data}
+    return f"event: {event}\ndata: {json.dumps(payload)}\n\n"
 
 
 @router.post("")
