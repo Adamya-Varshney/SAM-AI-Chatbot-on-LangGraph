@@ -5,12 +5,12 @@ import { ChatHeader } from "@/components/chat/chat-header"
 import { WelcomeScreen } from "@/components/chat/welcome-screen"
 import { InputArea } from "@/components/chat/input-area"
 import { useMediaQuery } from "@/hooks/use-media-query"
-import { useState } from "react"
+import { useSidebar } from "@/hooks/use-sidebar"
 
 export default function NewChatPage() {
   const router = useRouter()
   const isDesktop = useMediaQuery("(min-width: 768px)")
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const { toggle: toggleSidebar } = useSidebar()
 
   const handleSend = (message: string) => {
     const threadId = crypto.randomUUID()
@@ -22,7 +22,7 @@ export default function NewChatPage() {
     <>
       <ChatHeader
         title="New Chat"
-        onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+        onMenuClick={toggleSidebar}
         showMenu={!isDesktop}
       />
       <WelcomeScreen onSuggestionClick={handleSend} />
