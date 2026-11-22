@@ -1,7 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage, ToolMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState, START, END
@@ -168,6 +168,8 @@ async def run_agent_stream(
 
         collected_text = ""
         tool_call_run_ids: set[str] = set()
+        pending_content: dict[str, list[str]] = {}
+        flushed_runs: set[str] = set()
 
         async for event in compiled.astream_events(state, config, version="v2"):
             kind = event["event"]
@@ -177,12 +179,29 @@ async def run_agent_stream(
                 chunk = event["data"]["chunk"]
                 if hasattr(chunk, "tool_call_chunks") and chunk.tool_call_chunks:
                     tool_call_run_ids.add(run_id)
+                    pending_content.pop(run_id, None)
                     continue
                 if run_id in tool_call_run_ids:
                     continue
                 if hasattr(chunk, "content") and chunk.content and isinstance(chunk.content, str):
-                    collected_text += chunk.content
-                    yield ("token", {"content": chunk.content})
+                    if run_id in flushed_runs:
+                        collected_text += chunk.content
+                        yield ("token", {"content": chunk.content})
+                    else:
+                        pending_content.setdefault(run_id, []).append(chunk.content)
+                        if len(pending_content[run_id]) >= 3:
+                            flushed_runs.add(run_id)
+                            buffered = "".join(pending_content.pop(run_id))
+                            collected_text += buffered
+                            yield ("token", {"content": buffered})
+
+            elif kind == "on_chat_model_end":
+                run_id = event.get("run_id", "")
+                if run_id in pending_content and run_id not in tool_call_run_ids:
+                    flushed_runs.add(run_id)
+                    buffered = "".join(pending_content.pop(run_id))
+                    collected_text += buffered
+                    yield ("token", {"content": buffered})
 
             elif kind == "on_tool_start":
                 tool_name = event.get("name", "unknown")
@@ -219,10 +238,18 @@ async def get_thread_messages(thread_id: str) -> list[dict]:
             messages = state["channel_values"].get("messages", [])
             result = []
             for msg in messages:
-                if isinstance(msg, SystemMessage):
+                if isinstance(msg, (SystemMessage, ToolMessage)):
+                    continue
+                if isinstance(msg, AIMessage) and getattr(msg, "tool_calls", None):
+                    continue
+                if isinstance(msg, HumanMessage):
+                    role = "user"
+                elif isinstance(msg, AIMessage):
+                    role = "assistant"
+                else:
                     continue
                 result.append({
-                    "role": "user" if isinstance(msg, HumanMessage) else "assistant",
+                    "role": role,
                     "content": msg.content,
                     "timestamp": getattr(msg, "response_metadata", {}).get("timestamp", None),
                     "tools_used": [],
