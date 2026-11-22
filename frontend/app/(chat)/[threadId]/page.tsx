@@ -48,20 +48,47 @@ export default function ThreadPage() {
     setIsStreaming(true)
     setActiveTool(null)
 
+    let uploadedFilename: string | null = null
+
     if (file) {
       const formData = new FormData()
       formData.append("file", file)
       formData.append("thread_id", threadId)
       try {
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/upload`, {
+        setActiveTool("Uploading document...")
+        const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/documents/upload`, {
           method: "POST",
           headers: { Authorization: `Bearer ${session.access_token}` },
           body: formData,
         })
+        if (uploadRes.ok) {
+          uploadedFilename = file.name
+        } else {
+          const err = await uploadRes.json().catch(() => ({ detail: "Upload failed" }))
+          setMessages((prev) => [
+            ...prev,
+            { role: "assistant", content: `Failed to upload ${file.name}: ${err.detail || "Unknown error"}` },
+          ])
+          setIsStreaming(false)
+          setActiveTool(null)
+          return
+        }
       } catch {
-        // Upload error handled silently for now
+        setMessages((prev) => [
+          ...prev,
+          { role: "assistant", content: `Failed to upload ${file.name}: Network error` },
+        ])
+        setIsStreaming(false)
+        setActiveTool(null)
+        return
+      } finally {
+        setActiveTool(null)
       }
     }
+
+    const chatMessage = uploadedFilename
+      ? `[User uploaded file: ${uploadedFilename}]\n\n${content}`
+      : content
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat`, {
@@ -70,7 +97,7 @@ export default function ThreadPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
-        body: JSON.stringify({ thread_id: threadId, message: content }),
+        body: JSON.stringify({ thread_id: threadId, message: chatMessage }),
       })
 
       if (!response.ok || !response.body) {

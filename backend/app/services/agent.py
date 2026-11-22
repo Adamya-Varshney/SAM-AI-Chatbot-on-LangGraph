@@ -28,6 +28,7 @@ Guidelines:
 - Be concise but thorough. Use markdown formatting for readability.
 - If you use information from a web search, mention it naturally.
 - If you remember something about the user, use it naturally without explicitly saying "I remember."
+- When the user mentions uploading a file or their message indicates a file was uploaded (e.g. "[User uploaded file: ...]"), ALWAYS use the search_uploaded_documents tool to find and reference the document content before responding.
 """
 
 
