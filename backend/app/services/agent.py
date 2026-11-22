@@ -1,6 +1,7 @@
 import logging
+from contextlib import asynccontextmanager
 from typing import AsyncGenerator
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
@@ -54,11 +55,12 @@ def get_tools():
     return tools
 
 
+@asynccontextmanager
 async def get_checkpointer():
     settings = get_settings()
-    checkpointer = AsyncPostgresSaver.from_conn_string(settings.supabase_db_url)
-    await checkpointer.setup()
-    return checkpointer
+    async with AsyncPostgresSaver.from_conn_string(settings.supabase_db_url) as checkpointer:
+        await checkpointer.setup()
+        yield checkpointer
 
 
 def build_graph(tools: list):
@@ -105,35 +107,36 @@ async def run_agent_stream(
 
     tools = get_tools()
     graph = build_graph(tools)
-    checkpointer = await get_checkpointer()
-    compiled = graph.compile(checkpointer=checkpointer)
 
-    state = {
-        "messages": [
-            SystemMessage(content=system_prompt),
-            HumanMessage(content=message),
-        ]
-    }
-    config = {"configurable": {"thread_id": thread_id}}
+    async with get_checkpointer() as checkpointer:
+        compiled = graph.compile(checkpointer=checkpointer)
 
-    collected_text = ""
+        state = {
+            "messages": [
+                SystemMessage(content=system_prompt),
+                HumanMessage(content=message),
+            ]
+        }
+        config = {"configurable": {"thread_id": thread_id}}
 
-    async for event in compiled.astream_events(state, config, version="v2"):
-        kind = event["event"]
+        collected_text = ""
 
-        if kind == "on_chat_model_stream":
-            chunk = event["data"]["chunk"]
-            if hasattr(chunk, "content") and chunk.content:
-                collected_text += chunk.content
-                yield ("token", {"content": chunk.content})
+        async for event in compiled.astream_events(state, config, version="v2"):
+            kind = event["event"]
 
-        elif kind == "on_tool_start":
-            tool_name = event.get("name", "unknown")
-            yield ("tool_start", {"tool": tool_name, "label": f"Using {tool_name}..."})
+            if kind == "on_chat_model_stream":
+                chunk = event["data"]["chunk"]
+                if hasattr(chunk, "content") and chunk.content:
+                    collected_text += chunk.content
+                    yield ("token", {"content": chunk.content})
 
-        elif kind == "on_tool_end":
-            tool_name = event.get("name", "unknown")
-            yield ("tool_end", {"tool": tool_name, "label": f"{tool_name} complete"})
+            elif kind == "on_tool_start":
+                tool_name = event.get("name", "unknown")
+                yield ("tool_start", {"tool": tool_name, "label": f"Using {tool_name}..."})
+
+            elif kind == "on_tool_end":
+                tool_name = event.get("name", "unknown")
+                yield ("tool_end", {"tool": tool_name, "label": f"{tool_name} complete"})
 
     # Store memories asynchronously after response
     stored = await extract_and_store_memories(user_id, message, collected_text)
@@ -151,26 +154,26 @@ async def generate_title(text: str) -> str:
 
 
 async def get_thread_messages(thread_id: str) -> list[dict]:
-    checkpointer = await get_checkpointer()
     config = {"configurable": {"thread_id": thread_id}}
 
     try:
-        state = await checkpointer.aget(config)
-        if not state or "channel_values" not in state:
-            return []
+        async with get_checkpointer() as checkpointer:
+            state = await checkpointer.aget(config)
+            if not state or "channel_values" not in state:
+                return []
 
-        messages = state["channel_values"].get("messages", [])
-        result = []
-        for msg in messages:
-            if isinstance(msg, SystemMessage):
-                continue
-            result.append({
-                "role": "user" if isinstance(msg, HumanMessage) else "assistant",
-                "content": msg.content,
-                "timestamp": getattr(msg, "response_metadata", {}).get("timestamp", None),
-                "tools_used": [],
-            })
-        return result
+            messages = state["channel_values"].get("messages", [])
+            result = []
+            for msg in messages:
+                if isinstance(msg, SystemMessage):
+                    continue
+                result.append({
+                    "role": "user" if isinstance(msg, HumanMessage) else "assistant",
+                    "content": msg.content,
+                    "timestamp": getattr(msg, "response_metadata", {}).get("timestamp", None),
+                    "tools_used": [],
+                })
+            return result
     except Exception:
         logger.exception("Failed to load thread messages")
         return []
