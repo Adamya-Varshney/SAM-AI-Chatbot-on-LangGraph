@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Plus, Settings, LogOut, Search, X } from "lucide-react"
+import { Plus, Settings, LogOut, Search, X, PanelLeftClose } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThreadList } from "@/components/sidebar/thread-list"
 import { useAuth } from "@/hooks/use-auth"
+import { useMediaQuery } from "@/hooks/use-media-query"
 import { cn } from "@/lib/utils"
 
 interface SidebarProps {
@@ -18,6 +19,7 @@ export function Sidebar({ open, onClose, currentThreadId }: SidebarProps) {
   const router = useRouter()
   const { user, signOut } = useAuth()
   const [searchOpen, setSearchOpen] = useState(false)
+  const isDesktop = useMediaQuery("(min-width: 768px)")
 
   const handleNewChat = () => {
     const id = crypto.randomUUID()
@@ -34,7 +36,7 @@ export function Sidebar({ open, onClose, currentThreadId }: SidebarProps) {
       )}
     >
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3">
+      <div className="flex items-center gap-2 px-3 py-3 sm:px-4">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
             S
@@ -59,6 +61,17 @@ export function Sidebar({ open, onClose, currentThreadId }: SidebarProps) {
         >
           <Plus className="h-4 w-4" />
         </Button>
+        {!isDesktop && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0"
+            onClick={onClose}
+            aria-label="Close sidebar"
+          >
+            <PanelLeftClose className="h-4 w-4" />
+          </Button>
+        )}
       </div>
 
       {/* Search bar (collapsible) */}
@@ -89,7 +102,7 @@ export function Sidebar({ open, onClose, currentThreadId }: SidebarProps) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-border/50 p-3 space-y-1">
+      <div className="border-t border-border/50 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] space-y-1">
         <Button
           variant="ghost"
           className="w-full justify-start gap-2 h-9 px-3 text-sm"

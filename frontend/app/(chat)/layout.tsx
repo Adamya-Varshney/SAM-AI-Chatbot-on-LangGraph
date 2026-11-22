@@ -1,30 +1,30 @@
 "use client"
 
-import { useState } from "react"
 import { useParams } from "next/navigation"
 import { Sidebar } from "@/components/sidebar/sidebar"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { SidebarProvider, useSidebar } from "@/hooks/use-sidebar"
 
-export default function ChatLayout({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+function ChatLayoutInner({ children }: { children: React.ReactNode }) {
+  const { open, close } = useSidebar()
   const isDesktop = useMediaQuery("(min-width: 768px)")
   const params = useParams()
   const threadId = params?.threadId as string | undefined
 
   return (
     <div className="flex h-dvh overflow-hidden">
-      {(isDesktop || sidebarOpen) && (
+      {(isDesktop || open) && (
         <>
-          {!isDesktop && sidebarOpen && (
+          {!isDesktop && open && (
             <div
               className="fixed inset-0 z-40 bg-black/50"
-              onClick={() => setSidebarOpen(false)}
+              onClick={close}
             />
           )}
           <div className={!isDesktop ? "fixed inset-y-0 left-0 z-50" : ""}>
             <Sidebar
-              open={sidebarOpen}
-              onClose={() => setSidebarOpen(false)}
+              open={open}
+              onClose={close}
               currentThreadId={threadId}
             />
           </div>
@@ -35,5 +35,13 @@ export default function ChatLayout({ children }: { children: React.ReactNode }) 
         {children}
       </main>
     </div>
+  )
+}
+
+export default function ChatLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <ChatLayoutInner>{children}</ChatLayoutInner>
+    </SidebarProvider>
   )
 }

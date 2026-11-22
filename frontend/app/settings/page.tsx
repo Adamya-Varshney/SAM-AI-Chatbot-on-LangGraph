@@ -68,12 +68,12 @@ function SettingsContent() {
   }
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 px-4 py-8">
+    <div className="mx-auto max-w-2xl space-y-6 px-4 py-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] sm:space-y-8 sm:py-8">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="text-xl font-semibold sm:text-2xl">Settings</h1>
       </div>
 
       <section className="space-y-3">

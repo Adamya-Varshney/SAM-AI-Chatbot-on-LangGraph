@@ -9,6 +9,7 @@ import { WelcomeScreen } from "@/components/chat/welcome-screen"
 import { InputArea } from "@/components/chat/input-area"
 import { useAuth } from "@/hooks/use-auth"
 import { useMediaQuery } from "@/hooks/use-media-query"
+import { useSidebar } from "@/hooks/use-sidebar"
 import { apiFetch } from "@/lib/api"
 
 interface Message {
@@ -22,6 +23,7 @@ export default function ThreadPage() {
   const threadId = params.threadId as string
   const { session } = useAuth()
   const isDesktop = useMediaQuery("(min-width: 768px)")
+  const { toggle: toggleSidebar } = useSidebar()
 
   const [messages, setMessages] = useState<Message[]>([])
   const [isStreaming, setIsStreaming] = useState(false)
@@ -190,7 +192,7 @@ export default function ThreadPage() {
     <>
       <ChatHeader
         title={title}
-        onMenuClick={() => {}}
+        onMenuClick={toggleSidebar}
         showMenu={!isDesktop}
       />
       {messages.length === 0 && !isStreaming && !searchParams.get("prompt") ? (

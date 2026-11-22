@@ -53,7 +53,7 @@ export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
   return (
     <div
       className={cn(
-        "border-t bg-background p-4",
+        "border-t bg-background p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] sm:p-4 sm:pb-[calc(1rem+env(safe-area-inset-bottom))]",
         dragOver && "ring-2 ring-primary ring-inset",
       )}
       onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
@@ -62,12 +62,12 @@ export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
     >
       {attachedFile && (
         <div className="mb-2 flex items-center gap-2 rounded-md bg-muted px-3 py-1.5 text-sm">
-          <Paperclip className="h-4 w-4" />
-          <span className="truncate">{attachedFile.name}</span>
+          <Paperclip className="h-4 w-4 shrink-0" />
+          <span className="min-w-0 truncate">{attachedFile.name}</span>
           <Button
             variant="ghost"
             size="icon"
-            className="ml-auto h-5 w-5"
+            className="ml-auto h-5 w-5 shrink-0"
             onClick={() => setAttachedFile(null)}
           >
             <X className="h-3 w-3" />
@@ -75,7 +75,7 @@ export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
         </div>
       )}
 
-      <div className="flex items-end gap-2">
+      <div className="mx-auto flex max-w-3xl items-end gap-1.5 sm:gap-2">
         <input
           ref={fileInputRef}
           type="file"
@@ -89,10 +89,11 @@ export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
         <Button
           variant="ghost"
           size="icon"
+          className="h-9 w-9 shrink-0 sm:h-10 sm:w-10"
           onClick={() => fileInputRef.current?.click()}
           aria-label="Attach PDF"
         >
-          <Paperclip className="h-5 w-5" />
+          <Paperclip className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
 
         <textarea
@@ -102,16 +103,17 @@ export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
           onKeyDown={handleKeyDown}
           placeholder="Message SAM AI..."
           rows={1}
-          className="flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="min-h-[40px] flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
 
         <Button
           size="icon"
+          className="h-9 w-9 shrink-0 sm:h-10 sm:w-10"
           onClick={handleSubmit}
           disabled={isLoading || (!input.trim() && !attachedFile)}
           aria-label="Send message"
         >
-          <Send className="h-5 w-5" />
+          <Send className="h-4 w-4 sm:h-5 sm:w-5" />
         </Button>
       </div>
     </div>

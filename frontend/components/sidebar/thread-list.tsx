@@ -204,7 +204,7 @@ export function ThreadList({ currentThreadId, onSelect }: ThreadListProps) {
                 variant="ghost"
                 size="icon"
                 className={cn(
-                  "h-7 w-7 shrink-0",
+                  "h-7 w-7 shrink-0 touch-show",
                   menuOpen === thread.thread_id
                     ? "opacity-100"
                     : "opacity-0 group-hover:opacity-100",

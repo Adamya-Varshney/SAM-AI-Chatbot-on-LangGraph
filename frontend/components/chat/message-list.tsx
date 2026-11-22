@@ -23,7 +23,7 @@ export function MessageList({ messages, isStreaming, activeTool }: MessageListPr
   }, [messages, activeTool])
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto overscroll-contain">
       <div className="mx-auto max-w-3xl">
         {messages.map((msg, i) => (
           <MessageBubble
@@ -34,7 +34,7 @@ export function MessageList({ messages, isStreaming, activeTool }: MessageListPr
           />
         ))}
         {activeTool && (
-          <div className="px-4 py-2">
+          <div className="px-3 py-2 sm:px-4">
             <ToolIndicator label={activeTool} />
           </div>
         )}
