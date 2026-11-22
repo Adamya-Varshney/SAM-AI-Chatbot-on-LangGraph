@@ -167,13 +167,18 @@ async def run_agent_stream(
         config = {"configurable": {"thread_id": thread_id}}
 
         collected_text = ""
+        tool_call_run_ids: set[str] = set()
 
         async for event in compiled.astream_events(state, config, version="v2"):
             kind = event["event"]
 
             if kind == "on_chat_model_stream":
+                run_id = event.get("run_id", "")
                 chunk = event["data"]["chunk"]
                 if hasattr(chunk, "tool_call_chunks") and chunk.tool_call_chunks:
+                    tool_call_run_ids.add(run_id)
+                    continue
+                if run_id in tool_call_run_ids:
                     continue
                 if hasattr(chunk, "content") and chunk.content and isinstance(chunk.content, str):
                     collected_text += chunk.content
