@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     encryption_key: str = ""
 
     frontend_url: str = "http://localhost:3000"
+    backend_url: str = "http://localhost:8000"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
