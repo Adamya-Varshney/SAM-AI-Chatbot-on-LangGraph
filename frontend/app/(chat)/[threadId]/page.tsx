@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { mutate } from "swr"
 import { ChatHeader } from "@/components/chat/chat-header"
 import { MessageList } from "@/components/chat/message-list"
+import { WelcomeScreen } from "@/components/chat/welcome-screen"
 import { InputArea } from "@/components/chat/input-area"
 import { useAuth } from "@/hooks/use-auth"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -192,7 +193,11 @@ export default function ThreadPage() {
         onMenuClick={() => {}}
         showMenu={!isDesktop}
       />
-      <MessageList messages={messages} isStreaming={isStreaming} activeTool={activeTool} />
+      {messages.length === 0 && !isStreaming && !searchParams.get("prompt") ? (
+        <WelcomeScreen onSuggestionClick={sendMessage} />
+      ) : (
+        <MessageList messages={messages} isStreaming={isStreaming} activeTool={activeTool} />
+      )}
       <InputArea onSubmit={sendMessage} isLoading={isStreaming} />
     </>
   )
