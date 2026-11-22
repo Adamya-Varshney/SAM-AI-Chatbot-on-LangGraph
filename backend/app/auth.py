@@ -1,6 +1,9 @@
+import logging
 from fastapi import Depends, HTTPException, Header
 from jose import jwt, JWTError
 from app.config import Settings, get_settings
+
+logger = logging.getLogger(__name__)
 
 
 class CurrentUser:
@@ -30,5 +33,7 @@ async def get_current_user(
             email=payload.get("email"),
             role=payload.get("role", "authenticated"),
         )
-    except JWTError:
+    except JWTError as e:
+        logger.error("JWT validation failed: %s | secret_len=%d | token_prefix=%s",
+                      e, len(settings.supabase_jwt_secret), token[:20])
         raise HTTPException(status_code=401, detail="Invalid or expired token")
