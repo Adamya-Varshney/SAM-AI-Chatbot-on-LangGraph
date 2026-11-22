@@ -1,3 +1,5 @@
+import re
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 from functools import lru_cache
 
@@ -7,6 +9,13 @@ class Settings(BaseSettings):
     supabase_anon_key: str
     supabase_jwt_secret: str
     supabase_db_url: str
+
+    @field_validator("supabase_db_url")
+    @classmethod
+    def strip_bracketed_host(cls, v: str) -> str:
+        """Supabase wraps the hostname in IPv6-style brackets that
+        Python 3.12's stricter urlparse rejects."""
+        return re.sub(r"@\[([^\]]+)\]:", r"@\1:", v)
 
     openai_api_key: str
     tavily_api_key: str = ""
