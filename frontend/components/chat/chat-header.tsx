@@ -11,7 +11,7 @@ interface ChatHeaderProps {
 
 export function ChatHeader({ title, onMenuClick, showMenu }: ChatHeaderProps) {
   return (
-    <header className="flex h-12 shrink-0 items-center gap-2 border-b px-3 sm:h-14 sm:gap-3 sm:px-4">
+    <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border/50 px-3 sm:h-14 sm:gap-3 sm:px-4">
       {showMenu && (
         <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={onMenuClick} aria-label="Toggle sidebar">
           <Menu className="h-5 w-5" />

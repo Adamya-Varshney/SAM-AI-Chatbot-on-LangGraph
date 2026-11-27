@@ -6,6 +6,7 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { SamLogo } from "@/components/ui/sam-logo"
 
 export function LoginForm() {
   const router = useRouter()
@@ -42,9 +43,12 @@ export function LoginForm() {
 
   return (
     <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-      <div className="flex flex-col space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">Sign in to SAM AI</p>
+      <div className="flex flex-col items-center space-y-3 text-center">
+        <SamLogo size="md" className="h-14 w-14" />
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Welcome back</h1>
+          <p className="text-sm text-muted-foreground">Sign in to <span className="sam-gradient-text font-medium">SAM AI</span></p>
+        </div>
       </div>
 
       <form onSubmit={handleLogin} className="space-y-4">
@@ -63,7 +67,7 @@ export function LoginForm() {
           required
         />
         {error && <p className="text-sm text-destructive">{error}</p>}
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" className="w-full sam-gradient text-white hover:opacity-90" disabled={loading}>
           {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>

@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Plus, Settings, LogOut, Search, X, PanelLeftClose } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SamLogo } from "@/components/ui/sam-logo"
 import { ThreadList } from "@/components/sidebar/thread-list"
 import { useAuth } from "@/hooks/use-auth"
 import { useMediaQuery } from "@/hooks/use-media-query"
@@ -38,9 +39,7 @@ export function Sidebar({ open, onClose, currentThreadId }: SidebarProps) {
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 sm:px-4">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-            S
-          </div>
+          <SamLogo size="sm" className="h-8 w-8 shrink-0" />
           <span className="text-base font-semibold truncate">SAM AI</span>
         </div>
         <Button
@@ -112,7 +111,7 @@ export function Sidebar({ open, onClose, currentThreadId }: SidebarProps) {
           Settings
         </Button>
         <div className="flex items-center gap-2 px-3 py-1">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
+          <div className="sam-gradient flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-white text-xs font-medium">
             {user?.email?.charAt(0).toUpperCase() || "?"}
           </div>
           <span className="flex-1 truncate text-sm text-muted-foreground">{user?.email}</span>

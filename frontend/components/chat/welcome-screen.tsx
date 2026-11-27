@@ -36,7 +36,7 @@ export function WelcomeScreen({ onSuggestionClick }: WelcomeScreenProps) {
       <div className="flex flex-col items-center gap-3 sm:gap-4">
         <SamLogo size="lg" className="h-16 w-16 sm:h-24 sm:w-24" />
         <div className="text-center">
-          <h2 className="text-xl font-semibold sm:text-2xl">Welcome to SAM AI</h2>
+          <h2 className="text-xl font-semibold sm:text-2xl">Welcome to <span className="sam-gradient-text">SAM AI</span></h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Your intelligent assistant — search, analyze, code, and create.
           </p>
@@ -47,7 +47,7 @@ export function WelcomeScreen({ onSuggestionClick }: WelcomeScreenProps) {
         {SUGGESTIONS.map(({ icon: Icon, label, prompt }) => (
           <button
             key={label}
-            className="group flex items-start gap-3 rounded-xl border border-border/50 bg-card p-3 text-left transition-all hover:border-primary/30 hover:bg-accent/50 hover:shadow-sm active:scale-[0.98] sm:p-4"
+            className="group flex items-start gap-3 rounded-xl border border-border/50 bg-card p-3 text-left transition-all hover:border-primary/40 hover:bg-accent hover:shadow-sm active:scale-[0.98] sm:p-4"
             onClick={() => onSuggestionClick(prompt)}
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">

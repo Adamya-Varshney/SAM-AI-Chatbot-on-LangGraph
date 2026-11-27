@@ -27,7 +27,7 @@ export function MessageBubble({ role, content, isStreaming }: MessageBubbleProps
       <div
         className={cn(
           "flex h-7 w-7 shrink-0 items-center justify-center rounded-full sm:h-8 sm:w-8",
-          role === "user" ? "bg-primary text-primary-foreground" : "bg-muted",
+          role === "user" ? "sam-gradient text-white" : "bg-accent text-primary",
         )}
       >
         {role === "user" ? <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
@@ -38,7 +38,7 @@ export function MessageBubble({ role, content, isStreaming }: MessageBubbleProps
           className={cn(
             "overflow-hidden rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5",
             role === "user"
-              ? "bg-primary text-primary-foreground"
+              ? "sam-gradient text-white"
               : "bg-muted",
           )}
         >

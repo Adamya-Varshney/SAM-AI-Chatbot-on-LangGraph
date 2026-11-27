@@ -14,11 +14,11 @@ interface MemoryItemProps {
 export function MemoryItem({ id, content, category, createdAt, onDelete }: MemoryItemProps) {
   return (
     <div className="group flex items-start gap-3 rounded-lg border p-3 sm:p-4">
-      <Brain className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      <Brain className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
       <div className="min-w-0 flex-1 space-y-1">
         <p className="text-sm break-words">{content}</p>
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="rounded bg-muted px-1.5 py-0.5">{category}</span>
+          <span className="rounded bg-accent text-accent-foreground px-1.5 py-0.5">{category}</span>
           <span>{new Date(createdAt).toLocaleDateString()}</span>
         </div>
       </div>
