@@ -8,21 +8,21 @@
     --foreground: 239 10% 6%;
     --card: 0 0% 100%;
     --card-foreground: 239 10% 6%;
-    --primary: 239 84% 67%;
+    --primary: 263 70% 58%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 5% 96%;
     --secondary-foreground: 239 10% 6%;
     --muted: 240 5% 96%;
     --muted-foreground: 240 4% 46%;
-    --accent: 243 75% 95%;
-    --accent-foreground: 239 84% 67%;
+    --accent: 263 60% 95%;
+    --accent-foreground: 263 70% 58%;
     --destructive: 0 84% 60%;
     --border: 240 6% 90%;
     --input: 240 6% 90%;
-    --ring: 239 84% 67%;
+    --ring: 263 70% 58%;
     --radius: 0.5rem;
-    --sam-indigo: 239 84% 67%;
-    --sam-violet: 258 90% 66%;
+    --sam-purple: 263 70% 58%;
+    --sam-brown: 4 52% 31%;
   }
 
   .dark {
@@ -30,20 +30,20 @@
     --foreground: 0 0% 98%;
     --card: 240 6% 8%;
     --card-foreground: 0 0% 98%;
-    --primary: 239 84% 67%;
+    --primary: 263 70% 58%;
     --primary-foreground: 0 0% 100%;
     --secondary: 240 4% 16%;
     --secondary-foreground: 0 0% 98%;
     --muted: 240 4% 16%;
     --muted-foreground: 240 5% 65%;
-    --accent: 243 50% 16%;
-    --accent-foreground: 239 84% 80%;
+    --accent: 263 40% 16%;
+    --accent-foreground: 263 70% 76%;
     --destructive: 0 63% 31%;
     --border: 240 4% 16%;
     --input: 240 4% 16%;
-    --ring: 239 84% 67%;
-    --sam-indigo: 239 84% 67%;
-    --sam-violet: 258 90% 66%;
+    --ring: 263 70% 58%;
+    --sam-purple: 263 70% 58%;
+    --sam-brown: 4 52% 31%;
   }
 }
 
@@ -75,11 +75,11 @@
 }
 
 .sam-gradient {
-  background: linear-gradient(135deg, hsl(var(--sam-indigo)), hsl(var(--sam-violet)));
+  background: linear-gradient(135deg, hsl(var(--sam-purple)), hsl(var(--sam-brown)));
 }
 
 .sam-gradient-text {
-  background: linear-gradient(135deg, hsl(var(--sam-indigo)), hsl(var(--sam-violet)));
+  background: linear-gradient(135deg, hsl(var(--sam-purple)), hsl(var(--sam-brown)));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
