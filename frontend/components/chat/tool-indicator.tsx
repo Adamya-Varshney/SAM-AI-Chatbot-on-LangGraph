@@ -8,8 +8,8 @@ interface ToolIndicatorProps {
 
 export function ToolIndicator({ label }: ToolIndicatorProps) {
   return (
-    <div className="flex items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground">
-      <Loader2 className="h-4 w-4 animate-spin" />
+    <div className="flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-sm text-muted-foreground">
+      <Loader2 className="h-4 w-4 animate-spin text-primary" />
       <span>{label}</span>
     </div>
   )

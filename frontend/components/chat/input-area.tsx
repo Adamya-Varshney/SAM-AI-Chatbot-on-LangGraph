@@ -103,12 +103,12 @@ export function InputArea({ onSubmit, isLoading }: InputAreaProps) {
           onKeyDown={handleKeyDown}
           placeholder="Message SAM AI..."
           rows={1}
-          className="min-h-[40px] flex-1 resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="min-h-[40px] flex-1 resize-none rounded-xl border border-input bg-background px-3 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:border-primary/40"
         />
 
         <Button
           size="icon"
-          className="h-9 w-9 shrink-0 sm:h-10 sm:w-10"
+          className="h-9 w-9 shrink-0 sam-gradient text-white hover:opacity-90 disabled:opacity-50 sm:h-10 sm:w-10"
           onClick={handleSubmit}
           disabled={isLoading || (!input.trim() && !attachedFile)}
           aria-label="Send message"

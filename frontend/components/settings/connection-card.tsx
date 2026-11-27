@@ -25,7 +25,7 @@ export function ConnectionCard({ provider, connected, onConnect, onDisconnect }:
           <span className="hidden xs:inline sm:inline">Disconnect</span>
         </Button>
       ) : (
-        <Button variant="outline" size="sm" onClick={onConnect} className="shrink-0 gap-1.5 sm:gap-2">
+        <Button size="sm" onClick={onConnect} className="shrink-0 gap-1.5 sm:gap-2 sam-gradient text-white hover:opacity-90">
           <ExternalLink className="h-4 w-4" />
           <span>Connect</span>
         </Button>

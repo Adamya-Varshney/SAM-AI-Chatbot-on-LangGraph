@@ -21,7 +21,7 @@ export function ThemeToggle() {
           variant={theme === value ? "default" : "outline"}
           size="sm"
           onClick={() => setTheme(value)}
-          className="gap-2"
+          className={theme === value ? "gap-2 sam-gradient text-white hover:opacity-90" : "gap-2"}
         >
           <Icon className="h-4 w-4" />
           {label}
